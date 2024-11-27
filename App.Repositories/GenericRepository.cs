@@ -5,6 +5,8 @@ namespace App.Repositories;
 
 public class GenericRepository<T>(AppDbContext appDbContext) : IGenericRepository<T> where T : class
 {
+    protected AppDbContext Context = appDbContext;
+
     private readonly DbSet<T> _dbSet = appDbContext.Set<T>();
 
     public async ValueTask AddAsync(T entity) => await _dbSet.AddAsync(entity);
