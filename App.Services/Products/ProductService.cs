@@ -1,5 +1,6 @@
 ﻿using App.Repositories;
 using App.Repositories.Products;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace App.Services.Products;
@@ -18,7 +19,16 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
         };
     }
 
-    public async Task<ServiceResult<ProductDto>> GetProductByIdAsync(int id)
+    public async Task<ServiceResult<List<ProductDto>>> GetAllAsync()
+    {
+        var products = await productRepository.GetAll().ToListAsync();
+
+        var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+
+        return ServiceResult<List<ProductDto>>.Success(productsAsDto);
+    }
+
+    public async Task<ServiceResult<ProductDto?>> GetByIdAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
 
@@ -29,10 +39,10 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
 
         var productAsDto = new ProductDto(product!.Id, product.Name, product.Price, product.Stock);
 
-        return ServiceResult<ProductDto>.Success(productAsDto!);
+        return ServiceResult<ProductDto>.Success(productAsDto)!;
     }
 
-    public async Task<ServiceResult<CreateProductResponse>> CreateProductAsync(CreateProductRequest request)
+    public async Task<ServiceResult<CreateProductResponse>> CreateAsync(CreateProductRequest request)
     {
         var product = new Product()
         {
@@ -51,7 +61,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
 
     //Guard Clauses
 
-    public async Task<ServiceResult> UpdateProductAsync(int id, UpdateProductRequest updateProductRequest)
+    public async Task<ServiceResult> UpdateAsync(int id, UpdateProductRequest updateProductRequest)
     {
         var product = await productRepository.GetByIdAsync(id);
 
@@ -70,7 +80,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
         return ServiceResult.Success();
     }
 
-    public async Task<ServiceResult> DeleteProductAsync(int id)
+    public async Task<ServiceResult> DeleteAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
 
