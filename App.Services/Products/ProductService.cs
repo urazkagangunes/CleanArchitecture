@@ -102,6 +102,23 @@ public class ProductService : IProductService
         return ServiceResult.Success(HttpStatusCode.NoContent);
     }
 
+    public async Task<ServiceResult> UpdateStockAsync(UpdateProductStockRequest updateProductStockRequest)
+    {
+        var product = await _productRepository.GetByIdAsync(updateProductStockRequest.ProductId);
+
+        if(product is null)
+        {
+            return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
+        }
+
+        product.Stock = updateProductStockRequest.Quantity;
+
+        _productRepository.Update(product);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ServiceResult.Success(HttpStatusCode.NoContent);
+    }
+
     public async Task<ServiceResult> DeleteAsync(int id)
     {
         var product = await _productRepository.GetByIdAsync(id);
