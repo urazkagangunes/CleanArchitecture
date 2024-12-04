@@ -3,23 +3,34 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace App.API.Controllers
 {
-    public class ProductsController(ProductService productService) : CustomBaseController
+    public class ProductsController : CustomBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> GetAll() => CreateActionResult(await productService.GetAllAsync());
+        private readonly IProductService _productService;
 
+        // Yapıcı (Constructor)
+        public ProductsController(IProductService productService)
+        {
+            _productService = productService;
+        }
         [HttpGet]
-        public async Task<IActionResult> GetById(int id) => CreateActionResult(await productService.GetByIdAsync(id));
+        public async Task<IActionResult> GetAll() => CreateActionResult(await _productService.GetAllAsync());
+
+        [HttpGet("{pageNumber}/{pageSize}")]
+        public async Task<IActionResult> GetPagedAll(int pageNumber, int pageSize) => 
+            CreateActionResult(await _productService.GetPagedAllAsync(pageNumber, pageSize)); 
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id) => CreateActionResult(await _productService.GetByIdAsync(id));
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProductRequest createProductRequest) => 
-            CreateActionResult(await productService.CreateAsync(createProductRequest));
+            CreateActionResult(await _productService.CreateAsync(createProductRequest));
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateProductRequest updateProductRequest) => 
-            CreateActionResult(await productService.UpdateAsync(id, updateProductRequest));
+            CreateActionResult(await _productService.UpdateAsync(id, updateProductRequest));
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int id) => CreateActionResult(await productService.DeleteAsync(id));
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id) => CreateActionResult(await _productService.DeleteAsync(id));
     }
 }
