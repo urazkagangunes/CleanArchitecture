@@ -66,6 +66,14 @@ public class ProductService : IProductService
 
     public async Task<ServiceResult<CreateProductResponse>> CreateAsync(CreateProductRequest request)
     {
+        var anyProduct = await _productRepository.Where(c => c.Name == request.Name).AnyAsync();
+
+        if (anyProduct)
+        {
+            return ServiceResult<CreateProductResponse>.Fail("Product name is already taken.");
+        }
+
+
         var product = new Product()
         {
             Name = request.Name,
