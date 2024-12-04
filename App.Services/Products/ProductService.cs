@@ -1,5 +1,9 @@
 ﻿using App.Repositories;
 using App.Repositories.Products;
+using App.Services.Products.Create;
+using App.Services.Products.Update;
+using AutoMapper;
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -9,10 +13,12 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
     // Yapıcı (Constructor)
-    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork)
+    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
+        _mapper = mapper;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
     }
@@ -20,7 +26,9 @@ public class ProductService : IProductService
     {
         var products = await _productRepository.GetTopPriceProductAsync(count);
 
-        var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        //var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+
+        var productsAsDto = _mapper.Map<List<ProductDto>>(products);
 
         return new ServiceResult<List<ProductDto>>()
         {
@@ -32,7 +40,9 @@ public class ProductService : IProductService
     {
         var products = await _productRepository.GetAll().ToListAsync();
 
-        var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        //var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+
+        var productsAsDto = _mapper.Map<List<ProductDto>>(products);
 
         return ServiceResult<List<ProductDto>>.Success(productsAsDto);
     }
@@ -45,9 +55,11 @@ public class ProductService : IProductService
 
         var products = await _productRepository.GetAll().Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-        var productAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
+        //var productAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
 
-        return ServiceResult<List<ProductDto>>.Success(productAsDto);
+        var productsAsDto = _mapper.Map<List<ProductDto>>(products);
+
+        return ServiceResult<List<ProductDto>>.Success(productsAsDto);
     }
 
     public async Task<ServiceResult<ProductDto?>> GetByIdAsync(int id)
@@ -56,10 +68,12 @@ public class ProductService : IProductService
 
         if(product is  null)
         {
-            ServiceResult<Product>.Fail("Product not found", HttpStatusCode.NotFound);
+            return ServiceResult<ProductDto?>.Fail("Product not found", HttpStatusCode.NotFound);
         }
 
-        var productAsDto = new ProductDto(product!.Id, product.Name, product.Price, product.Stock);
+        //var productAsDto = new ProductDto(product!.Id, product.Name, product.Price, product.Stock);
+
+        var productAsDto = _mapper.Map<ProductDto>(product);
 
         return ServiceResult<ProductDto>.Success(productAsDto)!;
     }
@@ -95,10 +109,22 @@ public class ProductService : IProductService
     {
         var product = await _productRepository.GetByIdAsync(id);
 
-        if(product is null)
+        if (product is null)
         {
             return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
         }
+
+        //Is Not Working Turn Back Again!!!
+
+        //var isNameTaken = await _productRepository
+        //    .Where(c => c.Name == updateProductRequest.Name && c.Id != id).AnyAsync();
+
+        //if (isNameTaken)
+        //{
+        //    return ServiceResult.Fail("Product name is already taken.", HttpStatusCode.BadRequest);
+        //}
+
+        
 
         product.Name = updateProductRequest.Name;
         product.Price = updateProductRequest.Price;
