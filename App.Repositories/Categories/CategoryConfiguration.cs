@@ -8,6 +8,6 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     public void Configure(EntityTypeBuilder<Category> builder)
     {
         builder.HasKey(i => i.Id);
-        builder.Property(n => n.Name).HasColumnName("Name").IsRequired().HasMaxLength(150);
+        builder.Property(n => n.Name).IsRequired().HasMaxLength(150);
     }
 }

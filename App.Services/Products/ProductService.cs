@@ -87,7 +87,6 @@ public class ProductService : IProductService
             return ServiceResult<CreateProductResponse>.Fail("Product name is already taken.");
         }
 
-
         var product = _mapper.Map<Product>(request); 
         //    new Product()
         //{
@@ -114,8 +113,6 @@ public class ProductService : IProductService
         {
             return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
         }
-
-        //Is Not Working Turn Back Again!!!
 
         var isNameTaken = await _productRepository
             .Where(c => c.Name == updateProductRequest.Name && c.Id != product.Id).AnyAsync();
