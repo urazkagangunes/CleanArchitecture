@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using App.Repositories.Products;
+using App.Repositories.Categories;
 
 namespace App.Repositories.Extensions;
 
@@ -21,6 +22,8 @@ public static class RepositoryExtensions
         });
 
         services.AddScoped<IProductRepository, ProductRepository>();
+
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

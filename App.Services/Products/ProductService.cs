@@ -2,8 +2,8 @@
 using App.Repositories.Products;
 using App.Services.Products.Create;
 using App.Services.Products.Update;
+using App.Services.Products.UpdateProductStock;
 using AutoMapper;
-using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -88,12 +88,13 @@ public class ProductService : IProductService
         }
 
 
-        var product = new Product()
-        {
-            Name = request.Name,
-            Price = request.Price,
-            Stock = request.Stock,
-        };
+        var product = _mapper.Map<Product>(request); 
+        //    new Product()
+        //{
+        //    Name = request.Name,
+        //    Price = request.Price,
+        //    Stock = request.Stock,
+        //};
 
         await _productRepository.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
@@ -116,19 +117,19 @@ public class ProductService : IProductService
 
         //Is Not Working Turn Back Again!!!
 
-        //var isNameTaken = await _productRepository
-        //    .Where(c => c.Name == updateProductRequest.Name && c.Id != id).AnyAsync();
+        var isNameTaken = await _productRepository
+            .Where(c => c.Name == updateProductRequest.Name && c.Id != product.Id).AnyAsync();
 
-        //if (isNameTaken)
-        //{
-        //    return ServiceResult.Fail("Product name is already taken.", HttpStatusCode.BadRequest);
-        //}
+        if (isNameTaken)
+        {
+            return ServiceResult.Fail("Product name is already taken.", HttpStatusCode.BadRequest);
+        }
 
-        
+        //product.Name = updateProductRequest.Name;
+        //product.Price = updateProductRequest.Price;
+        //product.Stock = updateProductRequest.Stock;
 
-        product.Name = updateProductRequest.Name;
-        product.Price = updateProductRequest.Price;
-        product.Stock = updateProductRequest.Stock;
+        _mapper.Map(updateProductRequest, product);
 
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync();
