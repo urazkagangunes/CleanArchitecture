@@ -43,12 +43,12 @@ public class CategoryService : ICategoryService
     {
         var category = await _categoryRepository.GetByIdAsync(id);
 
-        if(category is null)
-        {
-            return ServiceResult.Fail($"Category {id} does not exist");
-        }
+        //if(category is null)
+        //{
+        //    return ServiceResult.Fail($"Category {id} does not exist");
+        //}
 
-        _categoryRepository.Delete(category);
+        _categoryRepository.Delete(category!);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Success(HttpStatusCode.NoContent);
@@ -69,7 +69,7 @@ public class CategoryService : ICategoryService
 
         if(category is null)
         {
-            return ServiceResult<CategoryDto?>.Fail($"Category {id} not found!", HttpStatusCode.NotFound);
+            return ServiceResult<CategoryDto?>.Fail($"Category {id} not found!", HttpStatusCode.NotFound)!;
         }
 
         var categoryAsDto = _mapper.Map<CategoryDto>(category);
@@ -102,22 +102,22 @@ public class CategoryService : ICategoryService
 
     public async Task<ServiceResult> UpdateAsync(int id, UpdateCategoryRequest updateCategoryRequest)
     {
-        var category = await _categoryRepository.GetByIdAsync(id);
+        //var category = await _categoryRepository.GetByIdAsync(id);
 
-        if (category is null)
-        {
-            return ServiceResult.Fail("Category not found.", HttpStatusCode.NotFound);
-        }
+        //if (category is null)
+        //{
+        //    return ServiceResult.Fail("Category not found.", HttpStatusCode.NotFound);
+        //}
 
-        var isNameTaken = await _categoryRepository.Where(n => n.Name == updateCategoryRequest.Name && n.Id != category.Id).AnyAsync();
+        var isNameTaken = await _categoryRepository.Where(n => n.Name == updateCategoryRequest.Name && n.Id != id).AnyAsync();
         
         if (isNameTaken)
         {
             return ServiceResult.Fail("Product name is already taken", HttpStatusCode.BadRequest);
         }
 
-        _mapper.Map(updateCategoryRequest, category);
-
+        var category = _mapper.Map<Category>(updateCategoryRequest);
+        category.Id = id;
         _categoryRepository.Update(category);
         await _unitOfWork.SaveChangesAsync();
 

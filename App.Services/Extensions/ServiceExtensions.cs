@@ -1,10 +1,10 @@
-﻿using App.Repositories;
-using App.Repositories.Products;
-using App.Services.Categories;
+﻿using App.Services.Categories;
 using App.Services.ExceptionHandlers;
+using App.Services.Filters;
 using App.Services.Products;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -15,11 +15,12 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<ApiBehaviorOptions>(opt => opt.SuppressModelStateInvalidFilter = true);
+
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICategoryService, CategoryService>();
-        //services.AddScoped<ServiceResult>();
-        //services.AddScoped<IProductRepository, ProductRepository>();
-        //services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped(typeof(NotFoundFilter<,>));
 
         services.AddFluentValidationAutoValidation();
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

@@ -107,15 +107,15 @@ public class ProductService : IProductService
 
     public async Task<ServiceResult> UpdateAsync(int id, UpdateProductRequest updateProductRequest)
     {
-        var product = await _productRepository.GetByIdAsync(id);
+        //var product = await _productRepository.GetByIdAsync(id);
 
-        if (product is null)
-        {
-            return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
-        }
+        //if (product is null)
+        //{
+        //    return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
+        //}
 
         var isNameTaken = await _productRepository
-            .Where(c => c.Name == updateProductRequest.Name && c.Id != product.Id).AnyAsync();
+            .Where(c => c.Name == updateProductRequest.Name && c.Id != id).AnyAsync();
 
         if (isNameTaken)
         {
@@ -126,8 +126,8 @@ public class ProductService : IProductService
         //product.Price = updateProductRequest.Price;
         //product.Stock = updateProductRequest.Stock;
 
-        _mapper.Map(updateProductRequest, product);
-
+        var product = _mapper.Map<Product>(updateProductRequest);
+        product.Id = id;
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync();
 
@@ -138,13 +138,13 @@ public class ProductService : IProductService
     {
         var product = await _productRepository.GetByIdAsync(updateProductStockRequest.ProductId);
 
-        if(product is null)
-        {
-            return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
-        }
+        //if(product is null)
+        //{
+        //    return ServiceResult.Fail("Product not found.", HttpStatusCode.NotFound);
+        //}
 
-        product.Stock = updateProductStockRequest.Quantity;
-
+        product!.Stock = updateProductStockRequest.Quantity;
+        
         _productRepository.Update(product);
         await _unitOfWork.SaveChangesAsync();
 
@@ -155,12 +155,12 @@ public class ProductService : IProductService
     {
         var product = await _productRepository.GetByIdAsync(id);
 
-        if (product is null)
-        {
-            return ServiceResult.Fail($"Product {id} does not exist");
-        }
+        //if (product is null)
+        //{
+        //    return ServiceResult.Fail($"Product {id} does not exist");
+        //}
 
-        _productRepository.Delete(product);
+        _productRepository.Delete(product!);
         await _unitOfWork.SaveChangesAsync();
 
         return ServiceResult.Success(HttpStatusCode.NoContent);

@@ -2,7 +2,7 @@
 
 namespace App.Repositories.Categories;
 
-public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
+public class CategoryRepository : GenericRepository<Category, int>, ICategoryRepository
 {
     private readonly AppDbContext _context;
     public CategoryRepository(AppDbContext appDbContext) : base(appDbContext)

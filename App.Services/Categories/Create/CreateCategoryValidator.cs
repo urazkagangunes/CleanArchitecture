@@ -1,5 +1,4 @@
-﻿using App.Services.Categories.Create;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace App.Services.Categories.Create;
 

@@ -27,7 +27,7 @@ public static class RepositoryExtensions
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
