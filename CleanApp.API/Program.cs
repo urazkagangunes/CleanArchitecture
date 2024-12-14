@@ -1,6 +1,7 @@
-using App.Repositories.Extensions;
-using App.Services.Extensions;
-using App.Services.Filters;
+using App.Persistence.Extensions;
+using App.Application.Extensions;
+using CleanApp.API.Filters;
+using CleanApp.API.ExceptionHandler;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,14 +13,20 @@ builder.Services.AddControllers(options =>
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddRepositories(builder.Configuration).AddServices(builder.Configuration);
+
+builder.Services.AddScoped(typeof(NotFoundFilter<,>));
+builder.Services.AddScoped<CriticalExceptionHandler>();
+builder.Services.AddScoped<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
-app.UseExceptionHandler(x => {  });
+app.UseExceptionHandler(x => { });
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
