@@ -1,12 +1,14 @@
 ﻿using App.Application;
 using App.Application.Contracts.Caching;
 using App.Application.Contracts.Persistence;
+using App.Application.Contracts.ServiceBus;
 using App.Application.Features.Products;
 using App.Application.Features.Products.Create;
 using App.Application.Features.Products.Dto;
 using App.Application.Features.Products.Update;
 using App.Application.Features.Products.UpdateProductStock;
 using App.Domain.Entities;
+using App.Domain.Events;
 using AutoMapper;
 using FluentValidation;
 using System.Net;
@@ -20,9 +22,10 @@ public class ProductService : IProductService
     private readonly IValidator<CreateProductRequest> _createProductRequestValidator;
     private readonly IMapper _mapper;
     private readonly ICacheService _cacheService;
+    private readonly IServiceBus _serviceBus;
 
     // Yapıcı (Constructor)
-    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, 
+    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IServiceBus serviceBus,
         IValidator<CreateProductRequest> validator, IMapper mapper, ICacheService cacheService)
     {
         _mapper = mapper;
@@ -30,6 +33,7 @@ public class ProductService : IProductService
         _createProductRequestValidator = validator;
         _unitOfWork = unitOfWork;
         _cacheService = cacheService;
+        _serviceBus = serviceBus;
     }
 
     private const string ProductListCacheKey = "ProductListCacheKey";
@@ -119,6 +123,7 @@ public class ProductService : IProductService
 
         await _productRepository.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
+        await _serviceBus.PublishAsync(new ProductAddedEvent(product.Id, product.Name, product.Price));
 
         return ServiceResult<CreateProductResponse>.SuccessAsCreate(new CreateProductResponse(product.Id), $"api/products/{product.Id}");
     }

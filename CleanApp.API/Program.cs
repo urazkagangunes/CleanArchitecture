@@ -1,4 +1,5 @@
 using App.Application.Extensions;
+using App.Bus;
 using App.Persistence.Extensions;
 using CleanApp.API.Extensions;
 
@@ -7,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllerWithFiltersExt().AddSwaggerGenExt().AddExceptionHandlerExt().AddCachingExt();
 
-builder.Services.AddRepositories(builder.Configuration).AddServices(builder.Configuration);
+builder.Services.AddRepositories(builder.Configuration).AddServices(builder.Configuration).AddBusExt(builder.Configuration);
 
 var app = builder.Build();
 
