@@ -1,4 +1,5 @@
 ﻿using App.Application;
+using App.Application.Contracts.Caching;
 using App.Application.Contracts.Persistence;
 using App.Application.Features.Products;
 using App.Application.Features.Products.Create;
@@ -18,15 +19,20 @@ public class ProductService : IProductService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IValidator<CreateProductRequest> _createProductRequestValidator;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cacheService;
 
     // Yapıcı (Constructor)
-    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, IValidator<CreateProductRequest> validator, IMapper mapper)
+    public ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork, 
+        IValidator<CreateProductRequest> validator, IMapper mapper, ICacheService cacheService)
     {
         _mapper = mapper;
         _productRepository = productRepository;
         _createProductRequestValidator = validator;
         _unitOfWork = unitOfWork;
+        _cacheService = cacheService;
     }
+
+    private const string ProductListCacheKey = "ProductListCacheKey";
     public async Task<ServiceResult<List<ProductDto>>> GetTopPriceProductsAsync(int count)
     {
         var products = await _productRepository.GetTopPriceProductAsync(count);
@@ -43,11 +49,22 @@ public class ProductService : IProductService
 
     public async Task<ServiceResult<List<ProductDto>>> GetAllAsync()
     {
+        //cache aside design pattern
+        //1.any cache
+        //2.from db
+        //3.caching data
+
+        var prodcutListAsCached = await _cacheService.GetAsync<List<ProductDto>>(ProductListCacheKey);
+
+        if(prodcutListAsCached is not null) return ServiceResult<List<ProductDto>>.Success(prodcutListAsCached);
+
         var products = await _productRepository.GetAllAsync();
 
         //var productsAsDto = products.Select(p => new ProductDto(p.Id, p.Name, p.Price, p.Stock)).ToList();
 
         var productsAsDto = _mapper.Map<List<ProductDto>>(products);
+
+        await _cacheService.AddAsync(ProductListCacheKey, productsAsDto, TimeSpan.FromMinutes(1));
 
         return ServiceResult<List<ProductDto>>.Success(productsAsDto);
     }
